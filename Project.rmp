@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8"?><process version="10.4.003">
+  <context>
+    <input/>
+    <output/>
+    <macros/>
+  </context>
+  <operator activated="true" class="process" compatibility="10.4.003" expanded="true" name="Process">
+    <parameter key="logverbosity" value="init"/>
+    <parameter key="random_seed" value="2001"/>
+    <parameter key="send_mail" value="never"/>
+    <parameter key="notification_email" value=""/>
+    <parameter key="process_duration_for_mail" value="30"/>
+    <parameter key="encoding" value="SYSTEM"/>
+    <process expanded="true">
+      <operator activated="true" class="read_csv" compatibility="10.4.003" expanded="true" height="68" name="BT data" width="90" x="45" y="34">
+        <parameter key="csv_file" value="/Users/chananya/Downloads/bt_symmetric.csv"/>
+        <parameter key="column_separators" value=","/>
+        <parameter key="trim_lines" value="false"/>
+        <parameter key="multiline_text" value="false"/>
+        <parameter key="use_quotes" value="true"/>
+        <parameter key="quotes_character" value="&quot;"/>
+        <parameter key="escape_character" value="\"/>
+        <parameter key="skip_comments" value="true"/>
+        <parameter key="comment_characters" value="#"/>
+        <parameter key="starting_row" value="1"/>
+        <parameter key="parse_numbers" value="true"/>
+        <parameter key="decimal_character" value="."/>
+        <parameter key="grouped_digits" value="false"/>
+        <parameter key="grouping_character" value=","/>
+        <parameter key="infinity_representation" value=""/>
+        <parameter key="date_format" value=""/>
+        <parameter key="use_header_row" value="true"/>
+        <parameter key="header_row" value="1"/>
+        <parameter key="first_row_as_names" value="true"/>
+        <list key="annotations"/>
+        <parameter key="time_zone" value="SYSTEM"/>
+        <parameter key="locale" value="English (United States)"/>
+        <parameter key="encoding" value="windows-1252"/>
+        <parameter key="read_all_values_as_polynominal" value="false"/>
+        <list key="data_set_meta_data_information">
+          <parameter key="0" value="timestamp.true.integer.attribute"/>
+          <parameter key="1" value="user a.true.integer.id"/>
+          <parameter key="2" value="user b.true.integer.attribute"/>
+          <parameter key="3" value="rssi.true.integer.attribute"/>
+        </list>
+        <parameter key="read_not_matching_values_as_missings" value="false"/>
+      </operator>
+      <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Usr B filter Error Conec" width="90" x="45" y="136">
+        <parameter key="parameter_expression" value=""/>
+        <parameter key="condition_class" value="custom_filters"/>
+        <parameter key="invert_filter" value="false"/>
+        <list key="filters_list">
+          <parameter key="filters_entry_key" value="user b.ge.0"/>
+        </list>
+        <parameter key="filters_logic_and" value="true"/>
+        <parameter key="filters_check_metadata" value="true"/>
+      </operator>
+      <operator activated="true" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="Create min time" width="90" x="45" y="289">
+        <list key="function_descriptions">
+          <parameter key="TimeInMin" value="timestamp/60"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Berlin"/>
+      </operator>
+      <operator activated="true" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="create Day" width="90" x="45" y="391">
+        <list key="function_descriptions">
+          <parameter key="Day" value="floor(TimeInMin/1440)%7"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Berlin"/>
+      </operator>
+      <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Fiilter only weekday" width="90" x="45" y="493">
+        <parameter key="parameter_expression" value=""/>
+        <parameter key="condition_class" value="custom_filters"/>
+        <parameter key="invert_filter" value="false"/>
+        <list key="filters_list">
+          <parameter key="filters_entry_key" value="Day.ne.0"/>
+          <parameter key="filters_entry_key" value="Day.ne.6"/>
+        </list>
+        <parameter key="filters_logic_and" value="true"/>
+        <parameter key="filters_check_metadata" value="true"/>
+      </operator>
+      <operator activated="true" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="create hour" width="90" x="45" y="646">
+        <list key="function_descriptions">
+          <parameter key="hour" value="(TimeInMin%1440)/60"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Berlin"/>
+      </operator>
+      <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter lunch" width="90" x="45" y="748">
+        <parameter key="parameter_expression" value=""/>
+        <parameter key="condition_class" value="custom_filters"/>
+        <parameter key="invert_filter" value="false"/>
+        <list key="filters_list">
+          <parameter key="filters_entry_key" value="hour.gt.12"/>
+          <parameter key="filters_entry_key" value="hour.lt.13"/>
+        </list>
+        <parameter key="filters_logic_and" value="true"/>
+        <parameter key="filters_check_metadata" value="true"/>
+      </operator>
+      <operator activated="true" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="create string user b" width="90" x="179" y="34">
+        <list key="function_descriptions">
+          <parameter key="user b string" value="str([user b])"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Berlin"/>
+      </operator>
+      <operator activated="true" class="multiply" compatibility="10.4.003" expanded="true" height="103" name="Multiply dataset" width="90" x="179" y="136"/>
+      <operator activated="false" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="Create Distance from Bluetooth" width="90" x="313" y="34">
+        <list key="function_descriptions">
+          <parameter key="Distance" value="pow(10,(((-60) - rssi) / (10 * 4)))"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Stockholm"/>
+      </operator>
+      <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter RSSI 95" width="90" x="179" y="238">
+        <parameter key="parameter_expression" value=""/>
+        <parameter key="condition_class" value="custom_filters"/>
+        <parameter key="invert_filter" value="false"/>
+        <list key="filters_list">
+          <parameter key="filters_entry_key" value="rssi.ge.-95"/>
+        </list>
+        <parameter key="filters_logic_and" value="true"/>
+        <parameter key="filters_check_metadata" value="true"/>
+      </operator>
+      <operator activated="true" class="aggregate" compatibility="10.4.003" expanded="true" height="82" name="Aggregate to groups" width="90" x="179" y="391">
+        <parameter key="use_default_aggregation" value="false"/>
+        <parameter key="attribute_filter_type" value="all"/>
+        <parameter key="attribute" value=""/>
+        <parameter key="attributes" value=""/>
+        <parameter key="use_except_expression" value="false"/>
+        <parameter key="value_type" value="attribute_value"/>
+        <parameter key="use_value_type_exception" value="false"/>
+        <parameter key="except_value_type" value="time"/>
+        <parameter key="block_type" value="attribute_block"/>
+        <parameter key="use_block_type_exception" value="false"/>
+        <parameter key="except_block_type" value="value_matrix_row_start"/>
+        <parameter key="invert_selection" value="false"/>
+        <parameter key="include_special_attributes" value="false"/>
+        <parameter key="default_aggregation_function" value="average"/>
+        <list key="aggregation_attributes">
+          <parameter key="user b string" value="concatenation"/>
+          <parameter key="user b string" value="count"/>
+        </list>
+        <parameter key="group_by_attributes" value="timestamp|user a|Day|hour|TimeInMin"/>
+        <parameter key="count_all_combinations" value="false"/>
+        <parameter key="only_distinct" value="false"/>
+        <parameter key="ignore_missings" value="true"/>
+      </operator>
+      <operator activated="true" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="Counter add 1 for a" width="90" x="179" y="493">
+        <list key="function_descriptions">
+          <parameter key="GroupSize in number of students" value="[count(user b string)] + 1"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Berlin"/>
+      </operator>
+      <operator activated="true" class="blending:select_attributes" compatibility="10.4.003" expanded="true" height="82" name="Exclude old count" width="90" x="179" y="595">
+        <parameter key="type" value="exclude attributes"/>
+        <parameter key="attribute_filter_type" value="one attribute"/>
+        <parameter key="select_attribute" value="count(user b string)"/>
+        <parameter key="select_subset" value=""/>
+        <parameter key="also_apply_to_special_attributes_(id,_label..)" value="false"/>
+      </operator>
+      <operator activated="true" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="create Day counter" width="90" x="179" y="697">
+        <list key="function_descriptions">
+          <parameter key="Day counter" value="floor(TimeInMin/1440)"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Berlin"/>
+      </operator>
+      <operator activated="true" class="multiply" compatibility="10.4.003" expanded="true" height="82" name="Multiply dataset (2)" width="90" x="313" y="136"/>
+      <operator activated="true" class="aggregate" compatibility="10.4.003" expanded="true" height="82" name="how many ticks 1 group" width="90" x="313" y="238">
+        <parameter key="use_default_aggregation" value="false"/>
+        <parameter key="attribute_filter_type" value="all"/>
+        <parameter key="attribute" value=""/>
+        <parameter key="attributes" value=""/>
+        <parameter key="use_except_expression" value="false"/>
+        <parameter key="value_type" value="attribute_value"/>
+        <parameter key="use_value_type_exception" value="false"/>
+        <parameter key="except_value_type" value="time"/>
+        <parameter key="block_type" value="attribute_block"/>
+        <parameter key="use_block_type_exception" value="false"/>
+        <parameter key="except_block_type" value="value_matrix_row_start"/>
+        <parameter key="invert_selection" value="false"/>
+        <parameter key="include_special_attributes" value="false"/>
+        <parameter key="default_aggregation_function" value="average"/>
+        <list key="aggregation_attributes">
+          <parameter key="TimeInMin" value="count"/>
+        </list>
+        <parameter key="group_by_attributes" value="concat(user b string)|Day|Day counter|user a|GroupSize in number of students"/>
+        <parameter key="count_all_combinations" value="false"/>
+        <parameter key="only_distinct" value="false"/>
+        <parameter key="ignore_missings" value="true"/>
+      </operator>
+      <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter out 1 min" width="90" x="313" y="340">
+        <parameter key="parameter_expression" value=""/>
+        <parameter key="condition_class" value="custom_filters"/>
+        <parameter key="invert_filter" value="false"/>
+        <list key="filters_list">
+          <parameter key="filters_entry_key" value="count(TimeInMin).ge.2"/>
+        </list>
+        <parameter key="filters_logic_and" value="true"/>
+        <parameter key="filters_check_metadata" value="true"/>
+      </operator>
+      <operator activated="true" class="blending:rename" compatibility="10.4.003" expanded="true" height="82" name="Rename" width="90" x="313" y="493">
+        <list key="rename attributes">
+          <parameter key="count(TimeInMin)" value="SumPerDay"/>
+        </list>
+        <parameter key="from_attribute" value=""/>
+        <parameter key="to_attribute" value=""/>
+      </operator>
+      <operator activated="true" class="multiply" compatibility="10.4.003" expanded="true" height="82" name="Dataset groups per day" width="90" x="313" y="595"/>
+      <operator activated="true" class="blending:generate_columns" compatibility="10.4.003" expanded="true" height="82" name="get minutes" width="90" x="313" y="697">
+        <list key="function_descriptions">
+          <parameter key="Duration in hours" value="SumPerDay*5"/>
+        </list>
+        <parameter key="keep_all_columns" value="true"/>
+        <parameter key="default_time_zone" value="Europe/Berlin"/>
+      </operator>
+      <operator activated="true" class="blending:select_attributes" compatibility="10.4.003" expanded="true" height="82" name="Filter out User a &amp;b and old time" width="90" x="447" y="34">
+        <parameter key="type" value="include attributes"/>
+        <parameter key="attribute_filter_type" value="a subset"/>
+        <parameter key="select_attribute" value=""/>
+        <parameter key="select_subset" value="Day␞Day counter␞Duration in hours␞GroupSize in number of students"/>
+        <parameter key="also_apply_to_special_attributes_(id,_label..)" value="false"/>
+      </operator>
+      <operator activated="true" class="blending:generate_id" compatibility="10.4.003" expanded="true" height="82" name="Generate new ID" width="90" x="447" y="136">
+        <parameter key="create_nominal_ids" value="false"/>
+        <parameter key="offset" value="0"/>
+      </operator>
+      <operator activated="true" class="normalize" compatibility="10.4.003" expanded="true" height="103" name="Normalize time" width="90" x="447" y="238">
+        <parameter key="return_preprocessing_model" value="false"/>
+        <parameter key="attribute_filter_type" value="subset"/>
+        <parameter key="attribute" value=""/>
+        <parameter key="attributes" value="Duration in hours"/>
+        <parameter key="use_except_expression" value="false"/>
+        <parameter key="value_type" value="numeric"/>
+        <parameter key="use_value_type_exception" value="false"/>
+        <parameter key="except_value_type" value="real"/>
+        <parameter key="block_type" value="value_series"/>
+        <parameter key="use_block_type_exception" value="false"/>
+        <parameter key="except_block_type" value="value_series_end"/>
+        <parameter key="invert_selection" value="false"/>
+        <parameter key="include_special_attributes" value="false"/>
+        <parameter key="method" value="range transformation"/>
+        <parameter key="min" value="0.08333333333333333"/>
+        <parameter key="max" value="0.9166666666666667"/>
+        <parameter key="allow_negative_values" value="false"/>
+      </operator>
+      <operator activated="true" class="multiply" compatibility="10.4.003" expanded="true" height="166" name="Multiply for euch" width="90" x="581" y="238"/>
+      <operator activated="true" class="subprocess" compatibility="10.4.003" expanded="true" height="166" name="Filter by day of week and cluster" width="90" x="715" y="238">
+        <process expanded="true">
+          <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter Monday" width="90" x="45" y="34">
+            <parameter key="parameter_expression" value=""/>
+            <parameter key="condition_class" value="custom_filters"/>
+            <parameter key="invert_filter" value="false"/>
+            <list key="filters_list">
+              <parameter key="filters_entry_key" value="Day.eq.1"/>
+            </list>
+            <parameter key="filters_logic_and" value="true"/>
+            <parameter key="filters_check_metadata" value="true"/>
+          </operator>
+          <operator activated="true" class="blending:select_attributes" compatibility="10.4.003" expanded="true" height="82" name="Filter out specific days" width="90" x="179" y="34">
+            <parameter key="type" value="exclude attributes"/>
+            <parameter key="attribute_filter_type" value="a subset"/>
+            <parameter key="select_attribute" value="Day counter"/>
+            <parameter key="select_subset" value="Day␞Day counter"/>
+            <parameter key="also_apply_to_special_attributes_(id,_label..)" value="false"/>
+          </operator>
+          <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter Tuesday" width="90" x="45" y="136">
+            <parameter key="parameter_expression" value=""/>
+            <parameter key="condition_class" value="custom_filters"/>
+            <parameter key="invert_filter" value="false"/>
+            <list key="filters_list">
+              <parameter key="filters_entry_key" value="Day.eq.2"/>
+            </list>
+            <parameter key="filters_logic_and" value="true"/>
+            <parameter key="filters_check_metadata" value="true"/>
+          </operator>
+          <operator activated="true" class="blending:select_attributes" compatibility="10.4.003" expanded="true" height="82" name="Filter out specific days (2)" width="90" x="179" y="136">
+            <parameter key="type" value="exclude attributes"/>
+            <parameter key="attribute_filter_type" value="a subset"/>
+            <parameter key="select_attribute" value="Day counter"/>
+            <parameter key="select_subset" value="Day␞Day counter"/>
+            <parameter key="also_apply_to_special_attributes_(id,_label..)" value="false"/>
+          </operator>
+          <operator activated="true" class="concurrency:k_means" compatibility="10.4.003" expanded="true" height="82" name="Tuesday" width="90" x="313" y="136">
+            <parameter key="add_cluster_attribute" value="true"/>
+            <parameter key="add_as_label" value="false"/>
+            <parameter key="remove_unlabeled" value="false"/>
+            <parameter key="k" value="5"/>
+            <parameter key="max_runs" value="10"/>
+            <parameter key="determine_good_start_values" value="true"/>
+            <parameter key="measure_types" value="MixedMeasures"/>
+            <parameter key="mixed_measure" value="MixedEuclideanDistance"/>
+            <parameter key="nominal_measure" value="NominalDistance"/>
+            <parameter key="numerical_measure" value="EuclideanDistance"/>
+            <parameter key="divergence" value="SquaredEuclideanDistance"/>
+            <parameter key="kernel_type" value="radial"/>
+            <parameter key="kernel_gamma" value="1.0"/>
+            <parameter key="kernel_sigma1" value="1.0"/>
+            <parameter key="kernel_sigma2" value="0.0"/>
+            <parameter key="kernel_sigma3" value="2.0"/>
+            <parameter key="kernel_degree" value="3.0"/>
+            <parameter key="kernel_shift" value="1.0"/>
+            <parameter key="kernel_a" value="1.0"/>
+            <parameter key="kernel_b" value="0.0"/>
+            <parameter key="max_optimization_steps" value="100"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+          </operator>
+          <operator activated="true" class="concurrency:k_means" compatibility="10.4.003" expanded="true" height="82" name="Monday" width="90" x="313" y="34">
+            <parameter key="add_cluster_attribute" value="true"/>
+            <parameter key="add_as_label" value="false"/>
+            <parameter key="remove_unlabeled" value="false"/>
+            <parameter key="k" value="5"/>
+            <parameter key="max_runs" value="10"/>
+            <parameter key="determine_good_start_values" value="true"/>
+            <parameter key="measure_types" value="MixedMeasures"/>
+            <parameter key="mixed_measure" value="MixedEuclideanDistance"/>
+            <parameter key="nominal_measure" value="NominalDistance"/>
+            <parameter key="numerical_measure" value="EuclideanDistance"/>
+            <parameter key="divergence" value="SquaredEuclideanDistance"/>
+            <parameter key="kernel_type" value="radial"/>
+            <parameter key="kernel_gamma" value="1.0"/>
+            <parameter key="kernel_sigma1" value="1.0"/>
+            <parameter key="kernel_sigma2" value="0.0"/>
+            <parameter key="kernel_sigma3" value="2.0"/>
+            <parameter key="kernel_degree" value="3.0"/>
+            <parameter key="kernel_shift" value="1.0"/>
+            <parameter key="kernel_a" value="1.0"/>
+            <parameter key="kernel_b" value="0.0"/>
+            <parameter key="max_optimization_steps" value="100"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+          </operator>
+          <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter Wednesday" width="90" x="45" y="238">
+            <parameter key="parameter_expression" value=""/>
+            <parameter key="condition_class" value="custom_filters"/>
+            <parameter key="invert_filter" value="false"/>
+            <list key="filters_list">
+              <parameter key="filters_entry_key" value="Day.eq.3"/>
+            </list>
+            <parameter key="filters_logic_and" value="true"/>
+            <parameter key="filters_check_metadata" value="true"/>
+          </operator>
+          <operator activated="true" class="blending:select_attributes" compatibility="10.4.003" expanded="true" height="82" name="Filter out specific days (3)" width="90" x="179" y="238">
+            <parameter key="type" value="exclude attributes"/>
+            <parameter key="attribute_filter_type" value="a subset"/>
+            <parameter key="select_attribute" value="Day counter"/>
+            <parameter key="select_subset" value="Day␞Day counter"/>
+            <parameter key="also_apply_to_special_attributes_(id,_label..)" value="false"/>
+          </operator>
+          <operator activated="true" class="concurrency:k_means" compatibility="10.4.003" expanded="true" height="82" name="Wednesday" width="90" x="313" y="238">
+            <parameter key="add_cluster_attribute" value="true"/>
+            <parameter key="add_as_label" value="false"/>
+            <parameter key="remove_unlabeled" value="false"/>
+            <parameter key="k" value="5"/>
+            <parameter key="max_runs" value="10"/>
+            <parameter key="determine_good_start_values" value="true"/>
+            <parameter key="measure_types" value="MixedMeasures"/>
+            <parameter key="mixed_measure" value="MixedEuclideanDistance"/>
+            <parameter key="nominal_measure" value="NominalDistance"/>
+            <parameter key="numerical_measure" value="EuclideanDistance"/>
+            <parameter key="divergence" value="SquaredEuclideanDistance"/>
+            <parameter key="kernel_type" value="radial"/>
+            <parameter key="kernel_gamma" value="1.0"/>
+            <parameter key="kernel_sigma1" value="1.0"/>
+            <parameter key="kernel_sigma2" value="0.0"/>
+            <parameter key="kernel_sigma3" value="2.0"/>
+            <parameter key="kernel_degree" value="3.0"/>
+            <parameter key="kernel_shift" value="1.0"/>
+            <parameter key="kernel_a" value="1.0"/>
+            <parameter key="kernel_b" value="0.0"/>
+            <parameter key="max_optimization_steps" value="100"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+          </operator>
+          <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter Thursday" width="90" x="45" y="340">
+            <parameter key="parameter_expression" value=""/>
+            <parameter key="condition_class" value="custom_filters"/>
+            <parameter key="invert_filter" value="false"/>
+            <list key="filters_list">
+              <parameter key="filters_entry_key" value="Day.eq.4"/>
+            </list>
+            <parameter key="filters_logic_and" value="true"/>
+            <parameter key="filters_check_metadata" value="true"/>
+          </operator>
+          <operator activated="true" class="blending:select_attributes" compatibility="10.4.003" expanded="true" height="82" name="Filter out specific days (4)" width="90" x="179" y="340">
+            <parameter key="type" value="exclude attributes"/>
+            <parameter key="attribute_filter_type" value="a subset"/>
+            <parameter key="select_attribute" value="Day counter"/>
+            <parameter key="select_subset" value="Day␞Day counter"/>
+            <parameter key="also_apply_to_special_attributes_(id,_label..)" value="false"/>
+          </operator>
+          <operator activated="true" class="concurrency:k_means" compatibility="10.4.003" expanded="true" height="82" name="Thursday" width="90" x="313" y="340">
+            <parameter key="add_cluster_attribute" value="true"/>
+            <parameter key="add_as_label" value="false"/>
+            <parameter key="remove_unlabeled" value="false"/>
+            <parameter key="k" value="5"/>
+            <parameter key="max_runs" value="10"/>
+            <parameter key="determine_good_start_values" value="true"/>
+            <parameter key="measure_types" value="MixedMeasures"/>
+            <parameter key="mixed_measure" value="MixedEuclideanDistance"/>
+            <parameter key="nominal_measure" value="NominalDistance"/>
+            <parameter key="numerical_measure" value="EuclideanDistance"/>
+            <parameter key="divergence" value="SquaredEuclideanDistance"/>
+            <parameter key="kernel_type" value="radial"/>
+            <parameter key="kernel_gamma" value="1.0"/>
+            <parameter key="kernel_sigma1" value="1.0"/>
+            <parameter key="kernel_sigma2" value="0.0"/>
+            <parameter key="kernel_sigma3" value="2.0"/>
+            <parameter key="kernel_degree" value="3.0"/>
+            <parameter key="kernel_shift" value="1.0"/>
+            <parameter key="kernel_a" value="1.0"/>
+            <parameter key="kernel_b" value="0.0"/>
+            <parameter key="max_optimization_steps" value="100"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+          </operator>
+          <operator activated="true" class="filter_examples" compatibility="10.4.003" expanded="true" height="103" name="Filter Friday" width="90" x="45" y="442">
+            <parameter key="parameter_expression" value=""/>
+            <parameter key="condition_class" value="custom_filters"/>
+            <parameter key="invert_filter" value="false"/>
+            <list key="filters_list">
+              <parameter key="filters_entry_key" value="Day.eq.5"/>
+            </list>
+            <parameter key="filters_logic_and" value="true"/>
+            <parameter key="filters_check_metadata" value="true"/>
+          </operator>
+          <operator activated="true" class="blending:select_attributes" compatibility="10.4.003" expanded="true" height="82" name="Filter out specific days (5)" width="90" x="179" y="442">
+            <parameter key="type" value="exclude attributes"/>
+            <parameter key="attribute_filter_type" value="a subset"/>
+            <parameter key="select_attribute" value="Day counter"/>
+            <parameter key="select_subset" value="Day␞Day counter"/>
+            <parameter key="also_apply_to_special_attributes_(id,_label..)" value="false"/>
+          </operator>
+          <operator activated="true" class="concurrency:k_means" compatibility="10.4.003" expanded="true" height="82" name="Friday" width="90" x="313" y="442">
+            <parameter key="add_cluster_attribute" value="true"/>
+            <parameter key="add_as_label" value="false"/>
+            <parameter key="remove_unlabeled" value="false"/>
+            <parameter key="k" value="5"/>
+            <parameter key="max_runs" value="10"/>
+            <parameter key="determine_good_start_values" value="true"/>
+            <parameter key="measure_types" value="MixedMeasures"/>
+            <parameter key="mixed_measure" value="MixedEuclideanDistance"/>
+            <parameter key="nominal_measure" value="NominalDistance"/>
+            <parameter key="numerical_measure" value="EuclideanDistance"/>
+            <parameter key="divergence" value="SquaredEuclideanDistance"/>
+            <parameter key="kernel_type" value="radial"/>
+            <parameter key="kernel_gamma" value="1.0"/>
+            <parameter key="kernel_sigma1" value="1.0"/>
+            <parameter key="kernel_sigma2" value="0.0"/>
+            <parameter key="kernel_sigma3" value="2.0"/>
+            <parameter key="kernel_degree" value="3.0"/>
+            <parameter key="kernel_shift" value="1.0"/>
+            <parameter key="kernel_a" value="1.0"/>
+            <parameter key="kernel_b" value="0.0"/>
+            <parameter key="max_optimization_steps" value="100"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+          </operator>
+          <connect from_port="in 1" to_op="Filter Monday" to_port="example set input"/>
+          <connect from_port="in 2" to_op="Filter Tuesday" to_port="example set input"/>
+          <connect from_port="in 3" to_op="Filter Wednesday" to_port="example set input"/>
+          <connect from_port="in 4" to_op="Filter Thursday" to_port="example set input"/>
+          <connect from_port="in 5" to_op="Filter Friday" to_port="example set input"/>
+          <connect from_op="Filter Monday" from_port="example set output" to_op="Filter out specific days" to_port="example set input"/>
+          <connect from_op="Filter out specific days" from_port="example set output" to_op="Monday" to_port="example set"/>
+          <connect from_op="Filter Tuesday" from_port="example set output" to_op="Filter out specific days (2)" to_port="example set input"/>
+          <connect from_op="Filter out specific days (2)" from_port="example set output" to_op="Tuesday" to_port="example set"/>
+          <connect from_op="Tuesday" from_port="cluster model" to_port="out 1"/>
+          <connect from_op="Monday" from_port="cluster model" to_port="out 2"/>
+          <connect from_op="Filter Wednesday" from_port="example set output" to_op="Filter out specific days (3)" to_port="example set input"/>
+          <connect from_op="Filter out specific days (3)" from_port="example set output" to_op="Wednesday" to_port="example set"/>
+          <connect from_op="Wednesday" from_port="cluster model" to_port="out 3"/>
+          <connect from_op="Filter Thursday" from_port="example set output" to_op="Filter out specific days (4)" to_port="example set input"/>
+          <connect from_op="Filter out specific days (4)" from_port="example set output" to_op="Thursday" to_port="example set"/>
+          <connect from_op="Thursday" from_port="cluster model" to_port="out 4"/>
+          <connect from_op="Filter Friday" from_port="example set output" to_op="Filter out specific days (5)" to_port="example set input"/>
+          <connect from_op="Filter out specific days (5)" from_port="example set output" to_op="Friday" to_port="example set"/>
+          <connect from_op="Friday" from_port="cluster model" to_port="out 5"/>
+          <portSpacing port="source_in 1" spacing="0"/>
+          <portSpacing port="source_in 2" spacing="0"/>
+          <portSpacing port="source_in 3" spacing="0"/>
+          <portSpacing port="source_in 4" spacing="0"/>
+          <portSpacing port="source_in 5" spacing="0"/>
+          <portSpacing port="source_in 6" spacing="0"/>
+          <portSpacing port="sink_out 1" spacing="0"/>
+          <portSpacing port="sink_out 2" spacing="0"/>
+          <portSpacing port="sink_out 3" spacing="0"/>
+          <portSpacing port="sink_out 4" spacing="0"/>
+          <portSpacing port="sink_out 5" spacing="0"/>
+          <portSpacing port="sink_out 6" spacing="0"/>
+        </process>
+      </operator>
+      <connect from_op="BT data" from_port="output" to_op="Usr B filter Error Conec" to_port="example set input"/>
+      <connect from_op="Usr B filter Error Conec" from_port="example set output" to_op="Create min time" to_port="table input"/>
+      <connect from_op="Create min time" from_port="table output" to_op="create Day" to_port="table input"/>
+      <connect from_op="create Day" from_port="table output" to_op="Fiilter only weekday" to_port="example set input"/>
+      <connect from_op="Fiilter only weekday" from_port="example set output" to_op="create hour" to_port="table input"/>
+      <connect from_op="create hour" from_port="table output" to_op="Filter lunch" to_port="example set input"/>
+      <connect from_op="Filter lunch" from_port="example set output" to_op="create string user b" to_port="table input"/>
+      <connect from_op="create string user b" from_port="table output" to_op="Multiply dataset" to_port="input"/>
+      <connect from_op="Multiply dataset" from_port="output 1" to_op="Filter RSSI 95" to_port="example set input"/>
+      <connect from_op="Filter RSSI 95" from_port="example set output" to_op="Aggregate to groups" to_port="example set input"/>
+      <connect from_op="Aggregate to groups" from_port="example set output" to_op="Counter add 1 for a" to_port="table input"/>
+      <connect from_op="Counter add 1 for a" from_port="table output" to_op="Exclude old count" to_port="example set input"/>
+      <connect from_op="Exclude old count" from_port="example set output" to_op="create Day counter" to_port="table input"/>
+      <connect from_op="create Day counter" from_port="table output" to_op="Multiply dataset (2)" to_port="input"/>
+      <connect from_op="Multiply dataset (2)" from_port="output 1" to_op="how many ticks 1 group" to_port="example set input"/>
+      <connect from_op="how many ticks 1 group" from_port="example set output" to_op="Filter out 1 min" to_port="example set input"/>
+      <connect from_op="Filter out 1 min" from_port="example set output" to_op="Rename" to_port="example set input"/>
+      <connect from_op="Rename" from_port="example set output" to_op="Dataset groups per day" to_port="input"/>
+      <connect from_op="Dataset groups per day" from_port="output 1" to_op="get minutes" to_port="table input"/>
+      <connect from_op="get minutes" from_port="table output" to_op="Filter out User a &amp;b and old time" to_port="example set input"/>
+      <connect from_op="Filter out User a &amp;b and old time" from_port="example set output" to_op="Generate new ID" to_port="example set input"/>
+      <connect from_op="Generate new ID" from_port="example set output" to_op="Normalize time" to_port="example set input"/>
+      <connect from_op="Normalize time" from_port="example set output" to_op="Multiply for euch" to_port="input"/>
+      <connect from_op="Multiply for euch" from_port="output 1" to_op="Filter by day of week and cluster" to_port="in 1"/>
+      <connect from_op="Multiply for euch" from_port="output 2" to_op="Filter by day of week and cluster" to_port="in 2"/>
+      <connect from_op="Multiply for euch" from_port="output 3" to_op="Filter by day of week and cluster" to_port="in 3"/>
+      <connect from_op="Multiply for euch" from_port="output 4" to_op="Filter by day of week and cluster" to_port="in 4"/>
+      <connect from_op="Multiply for euch" from_port="output 5" to_op="Filter by day of week and cluster" to_port="in 5"/>
+      <connect from_op="Filter by day of week and cluster" from_port="out 1" to_port="result 2"/>
+      <connect from_op="Filter by day of week and cluster" from_port="out 2" to_port="result 1"/>
+      <connect from_op="Filter by day of week and cluster" from_port="out 3" to_port="result 3"/>
+      <connect from_op="Filter by day of week and cluster" from_port="out 4" to_port="result 4"/>
+      <connect from_op="Filter by day of week and cluster" from_port="out 5" to_port="result 5"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+      <portSpacing port="sink_result 3" spacing="0"/>
+      <portSpacing port="sink_result 4" spacing="0"/>
+      <portSpacing port="sink_result 5" spacing="0"/>
+      <portSpacing port="sink_result 6" spacing="0"/>
+    </process>
+  </operator>
+</process>
